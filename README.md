@@ -22,7 +22,42 @@ $ python3 create_dataset.py
 ## Preprocessed data example.
 * [data](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing)
 
-```python3
+| key                             | its_content                                                                          | 
+| ------------------------------- | ------------------------------------------------------------------------------------ | 
+| document_title                  | Page title where the annotation exists.                                              | 
+| anchor_sent                     | Anchored sentence with `<a>` and `</a>`. This anchor can be used for Entity Linking. | 
+| annotation_doc_entity_title     | Which entity to be linked if the mention is disambiguated.                           | 
+| mention                         | Surface form as it is in sentence where the mention appeared.                        | 
+| original_sentence               | Sentence without anchors.                                                            | 
+| original_sentence_mention_start | Mention span start position in original sentence.                                    | 
+| original_sentence_mention_end   | Mention span end position in original sentence.                                      | 
 
+
+* For instance, a real-world example is shown from [virtualyoutuber wikia](https://virtualyoutuber.fandom.com/).
+```python3
+    {
+        "doc_title": "Melissa Kinrenka",
+        "annotation": [
+            {
+                "0": {
+                    "document_title": "Melissa Kinrenka",
+                    "anchor_sent": "Melissa Kinrenka (メリッサ・キンレンカ) is a Japanese Virtual YouTuber and member of <a> Nijisanji </a>.",
+                    "annotation_doc_entity_title": "Nijisanji",
+                    "mention": "Nijisanji",
+                    "original_sentence": "Melissa Kinrenka (メリッサ・キンレンカ) is a Japanese Virtual YouTuber and member of Nijisanji.",
+                    "original_sentence_mention_start": 75,
+                    "original_sentence_mention_end": 84
+                },
+                "1": {
+                    "document_title": "Melissa Kinrenka",
+                    "anchor_sent": "<a> Melissa Kinrenka </a> (メリッサ・キンレンカ) is a Japanese Virtual YouTuber and member of Nijisanji.",
+                    "annotation_doc_entity_title": "Melissa Kinrenka",
+                    "mention": "Melissa Kinrenka",
+                    "original_sentence": "Melissa Kinrenka (メリッサ・キンレンカ) is a Japanese Virtual YouTuber and member of Nijisanji.",
+                    "original_sentence_mention_start": 0,
+                    "original_sentence_mention_end": 16
+                }
+            },
+...
 
 ```
