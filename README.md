@@ -2,9 +2,9 @@
 * You can create datasets from Wikia that can be used for entity recognition and Entity Linking.
 
 ## Dataset
-* Download *.xml from wikia statistics page to './dataset/.
+* Download [worldname]_pages_current.xml from wikia statistics page to './dataset/.
 
-  * For example, if you are interested in Virtual Youtuber, download xml dump from [here](http://s3.amazonaws.com/wikia_xml_dumps/v/vi/virtualyoutuber_pages_current.xml.7z).
+  * For example, if you are interested in Virtual Youtuber, download `virtualyoutuber_pages_current.xml` dump from [here](http://s3.amazonaws.com/wikia_xml_dumps/v/vi/virtualyoutuber_pages_current.xml.7z).
 
 ## Preprocess
 * `python -m wikiextractor.WikiExtractor ./dataset/virtualyoutuber_pages_current.xml --links --json`
@@ -14,7 +14,7 @@
 $ conda create -n allennlp python=3.7
 $ conda activate allennlp
 $ pip install -r requirements.txt
-$ python3 create_dataset.py
+$ python3 create_dataset.py -world [worldname] # python3 create_dataset.py -world virtualyoutuber
 ```
 
 ## License

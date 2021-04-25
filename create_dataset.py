@@ -36,20 +36,22 @@ nlp.add_pipe('set_custom_boundaries', before="parser")
 nlp.tokenizer.add_special_case('lit.', [{ORTH: 'lit.'}])
 nlp.tokenizer.add_special_case('Lit.', [{ORTH: 'Lit.'}])
 
+def unwrap_self_preprocess(arg, **kwarg):
+    # メソッドfをクラスメソッドとして呼び出す関数
+    return Preprocessor._one_page_text_preprocessor(*arg, **kwarg)
+
 class Preprocessor:
     def __init__(self, args):
         self.args = args
         self.all_titles = self._all_titles_collector()
         self.coref_augmentation = self.args.coref_augmentation
-        self._entire_pages_retriever()
 
-    def _entire_pages_retriever(self):
+    def entire_annotation_retriever(self):
         dirpath_after_wikiextractor_preprocessing = self.args.dirpath_after_wikiextractor_preprocessing
         file_paths = glob(dirpath_after_wikiextractor_preprocessing+'**/*')
 
         entire_annotations = list()
 
-        all_coref_link_counts, all_original_link_counts = 0, 0
         for file in file_paths:
             with open(file, 'r') as f:
                 for line in tqdm(f): # TODO: multiprocessing
@@ -57,18 +59,10 @@ class Preprocessor:
                     line = json.loads(line)
                     title = line['title']
                     one_page_text = line['text']
-                    coref_link_counts_in_one_page, annotations = self._one_page_text_preprocessor(text=one_page_text,
-                                                                                           title=title)
-                    all_coref_link_counts += coref_link_counts_in_one_page
-                    if annotations == [] or annotations == [{}]:
-                        # print('Skipped title:', title)
-                        continue
-                    all_original_link_counts += len(annotations)
-                    entire_annotations.append({'doc_title': title, 'annotation': annotations})
-
-        print('all_coref_link_counts:', all_coref_link_counts)
-        print('all_original_link_counts:', all_original_link_counts)
-        with open(self.args.annotated_dataset_dir + 'annotation.json', 'w') as f:
+                    entire_annotations += self._one_page_text_preprocessor(title=title,
+                                                                           text=one_page_text)
+        print('all annotations:', len(entire_annotations))
+        with open(self.args.annotated_dataset_dir + self.args.world +'_annotation.json', 'w') as f:
             json.dump(entire_annotations, f, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
 
     def _all_titles_collector(self):
@@ -98,7 +92,7 @@ class Preprocessor:
         sections_and_sentences = self._section_anchor_remover(sections_and_sentences)
         sections_and_sentences = [self._external_link_remover_from_one_sentence(sentence=sentence)
                                   for sentence in sections_and_sentences]
-        coref_link_counts_in_one_page = self._coref_link_counts(sections_and_sentences)
+        # coref_link_counts_in_one_page = self._coref_link_counts(sections_and_sentences)
         annotations = list()
 
         for sentence in sections_and_sentences:
@@ -111,9 +105,11 @@ class Preprocessor:
             # TODO: Coreference resolusion
             if self.args.coref_augmentation:
                 annotation_json = self._coref_augmentation(annotation_json, title, sents)
-            annotations.append(annotation_json)
 
-        return coref_link_counts_in_one_page, annotations
+            if annotation_json != {}:
+                annotations.append(annotation_json)
+
+        return annotations
 
     def _coref_augmentation(self, annotation_json, title, sents):
         ''' add annotations from she/he/her/his match'''
@@ -380,3 +376,4 @@ if __name__ == '__main__':
     params = P.opts
 
     preprocessor = Preprocessor(args=params)
+    preprocessor.entire_annotation_retriever()
