@@ -1,0 +1,6 @@
+./dataset/virtualyoutuber_pages_current.xml
+./text/*
+./wikiextractor/*
+./preprocessed/annotation.json
+.idea/*
+__pycache__/*
