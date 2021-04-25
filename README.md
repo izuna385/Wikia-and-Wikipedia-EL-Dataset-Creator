@@ -1,4 +1,5 @@
 # Wikia-NER-and-EL-Dataset-Creator
+* You can create datasets from Wikia that can be used for entity recognition and Entity Linking.
 
 ## Dataset
 * Download *.xml from wikia statistics page to './dataset/.
@@ -24,13 +25,13 @@ $ python3 create_dataset.py
 
 | key                             | its_content                                                                          | 
 | ------------------------------- | ------------------------------------------------------------------------------------ | 
-| document_title                  | Page title where the annotation exists.                                              | 
-| anchor_sent                     | Anchored sentence with `<a>` and `</a>`. This anchor can be used for Entity Linking. | 
-| annotation_doc_entity_title     | Which entity to be linked if the mention is disambiguated.                           | 
-| mention                         | Surface form as it is in sentence where the mention appeared.                        | 
-| original_sentence               | Sentence without anchors.                                                            | 
-| original_sentence_mention_start | Mention span start position in original sentence.                                    | 
-| original_sentence_mention_end   | Mention span end position in original sentence.                                      | 
+| `document_title`                  | Page title where the annotation exists.                                              | 
+| `anchor_sent`                     | Anchored sentence with `<a>` and `</a>`. This anchor can be used for Entity Linking. | 
+| `annotation_doc_entity_title`     | Which entity to be linked if the mention is disambiguated.                           | 
+| `mention`                         | Surface form as it is in sentence where the mention appeared.                        | 
+| `original_sentence`               | Sentence without anchors.                                                            | 
+| `original_sentence_mention_start` | Mention span start position in original sentence.                                    | 
+| `original_sentence_mention_end`   | Mention span end position in original sentence.                                      | 
 
 
 * For instance, a real-world example is shown from [virtualyoutuber wikia](https://virtualyoutuber.fandom.com/).
