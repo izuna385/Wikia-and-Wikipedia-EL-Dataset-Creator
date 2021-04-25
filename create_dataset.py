@@ -262,8 +262,6 @@ class Preprocessor:
 
         return annotation_id2its_annotations, sents
 
-
-
     def _convert_a_tag_to_start_and_end_position(self, text_which_may_contain_a_tag: str):
         a_tag_regex = "<a>(.+?)</a>"
         pattern = re.compile(a_tag_regex)
