@@ -51,7 +51,7 @@ class Preprocessor:
         file_paths = glob(dirpath_after_wikiextractor_preprocessing+'**/*')
 
         entire_annotations = list()
-
+        doc_title2sents = {}
         for file in file_paths:
             with open(file, 'r') as f:
                 for line in tqdm(f): # TODO: multiprocessing
@@ -59,11 +59,16 @@ class Preprocessor:
                     line = json.loads(line)
                     title = line['title']
                     one_page_text = line['text']
-                    entire_annotations += self._one_page_text_preprocessor(title=title,
-                                                                           text=one_page_text)
+                    annotations, sents = self._one_page_text_preprocessor(title=title, text=one_page_text)
+                    entire_annotations += annotations
+                    doc_title2sents.update({title: sents})
+
         print('all annotations:', len(entire_annotations))
         with open(self.args.annotated_dataset_dir + self.args.world +'_annotation.json', 'w') as f:
             json.dump(entire_annotations, f, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
+
+        with open(self.args.annotated_dataset_dir + self.args.world +'_title2doc.json', 'w') as g:
+            json.dump(doc_title2sents, g, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
 
     def _all_titles_collector(self):
         dirpath_after_wikiextractor_preprocessing = self.args.dirpath_after_wikiextractor_preprocessing
@@ -94,7 +99,7 @@ class Preprocessor:
                                   for sentence in sections_and_sentences]
         # coref_link_counts_in_one_page = self._coref_link_counts(sections_and_sentences)
         annotations = list()
-
+        sentences_in_one_doc = list()
         for sentence in sections_and_sentences:
             a_tag_remain_text, entities = self._from_anchor_tags_to_entities(text=sentence)
             a_tag_no_remaining_text, positions = self._convert_a_tag_to_start_and_end_position(text_which_may_contain_a_tag=a_tag_remain_text)
@@ -106,10 +111,12 @@ class Preprocessor:
             if self.args.coref_augmentation:
                 annotation_json = self._coref_augmentation(annotation_json, title, sents)
 
+            sentences_in_one_doc += sents
+
             if annotation_json != {}:
                 annotations.append(annotation_json)
 
-        return annotations
+        return annotations, sentences_in_one_doc
 
     def _coref_augmentation(self, annotation_json, title, sents):
         ''' add annotations from she/he/her/his match'''
