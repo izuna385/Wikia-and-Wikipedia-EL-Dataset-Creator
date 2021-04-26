@@ -118,7 +118,7 @@ class Preprocessor:
     def _indocument_augmentation_with_its_title(self, annotation_json, sents, document_title):
         lower_document_title = copy.copy(document_title).lower().split(' ')
         its_partial_name = [name for name in lower_document_title if not name in COMMON_WORDS]
-        capitalized = [name.capitalize() for name in its_partial_name]
+        capitalized = [name.capitalize() for name in its_partial_name if not name.capitalize() in self.args.stopwords_for_augmentation]
 
         if len(capitalized) == 0:
             return annotation_json

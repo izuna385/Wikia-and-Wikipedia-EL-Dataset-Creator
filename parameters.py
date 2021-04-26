@@ -11,6 +11,7 @@ class WikiaPreprocessParams:
         parser.add_argument('-dirpath_after_wikiextractor_preprocessing', action='store', default='./text/', type=str)
         parser.add_argument('-coref_augmentation', action='store', default=False, type=strtobool)
         parser.add_argument('-annotated_dataset_dir', action='store', default='./preprocessed/', type=str)
+        parser.add_argument('-stopwords_for_augmentation', action='store', default='virtual,Virtual,youtuber,Youtuber', type=str)
 
         self.opts = parser.parse_args(sys.argv[1:])
         print('\n===PARAMETERS===')
