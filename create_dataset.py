@@ -1,21 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import re
-import xml.etree.ElementTree as ET
 from parameters import WikiaPreprocessParams
-import pdb
 from glob import glob
 import json
 from bs4 import BeautifulSoup
-import urllib
 from urllib.parse import quote, unquote
 import copy
 import spacy
 from spacy.language import Language
 from spacy.symbols import ORTH
 from tqdm import tqdm
-from multiprocessing import Pool
-import multiprocessing as multi
 import nltk
 nltk.download('brown')
 from nltk import FreqDist
@@ -44,7 +39,6 @@ class Preprocessor:
     def __init__(self, args):
         self.args = args
         self.all_titles = self._all_titles_collector()
-        self.coref_augmentation = self.args.coref_augmentation
 
     def entire_annotation_retriever(self):
         dirpath_after_wikiextractor_preprocessing = self.args.dirpath_after_wikiextractor_preprocessing
@@ -105,12 +99,15 @@ class Preprocessor:
             a_tag_remain_text, entities = self._from_anchor_tags_to_entities(text=sentence)
             a_tag_no_remaining_text, positions = self._convert_a_tag_to_start_and_end_position(text_which_may_contain_a_tag=a_tag_remain_text)
             annotation_json, sents = self._sentence_splitter_with_hyperlink_annotations(title, a_tag_no_remaining_text, positions, entities)
-            annotation_json = self._from_entire_titles_distant_augmentaton(annotation_json=annotation_json, sents=sents, document_title=title)
-            annotation_json = self._indocument_augmentation_with_its_title(annotation_json=annotation_json, sents=sents, document_title=title)
+            if self.args.augmentation_with_title_set_string_match:
+                annotation_json = self._from_entire_titles_distant_augmentaton(annotation_json=annotation_json, sents=sents, document_title=title)
+
+            if self.args.in_document_augmentation_with_its_title:
+                annotation_json = self._indocument_augmentation_with_its_title(annotation_json=annotation_json, sents=sents, document_title=title)
 
             # TODO: Coreference resolusion
-            if self.args.coref_augmentation:
-                annotation_json = self._coref_augmentation(annotation_json, title, sents)
+            # if self.args.coref_augmentation:
+            #     annotation_json = self._coref_augmentation(annotation_json, title, sents)
 
             sentences_in_one_doc += sents
 
