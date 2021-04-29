@@ -64,6 +64,7 @@ class Preprocessor:
                     doc_title2sents.update({title: sents})
 
         print('all annotations:', len(entire_annotations))
+
         with open(self.args.annotated_dataset_dir + self.args.world +'_annotation.json', 'w') as f:
             json.dump(entire_annotations, f, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
 
@@ -114,7 +115,8 @@ class Preprocessor:
             sentences_in_one_doc += sents
 
             if annotation_json != {}:
-                annotations.append(annotation_json)
+                for _, annotation in annotation_json.items():
+                    annotations.append(annotation)
 
         return annotations, sentences_in_one_doc
 
