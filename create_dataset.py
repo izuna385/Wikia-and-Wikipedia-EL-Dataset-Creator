@@ -12,8 +12,11 @@ from spacy.language import Language
 from spacy.symbols import ORTH
 from tqdm import tqdm
 import nltk
+import multiprocessing as multi
+from multiprocessing import Pool
 nltk.download('brown')
 from nltk import FreqDist
+import pdb
 from nltk.corpus import brown
 frequency_word_list = FreqDist(i.lower() for i in brown.words())
 COMMON_WORDS = [w_and_freq[0] for w_and_freq in frequency_word_list.most_common()[:10000]]
@@ -25,7 +28,7 @@ def set_custom_boundaries(doc):
             doc[token.i].is_sent_start = False
     return doc
 
-def unwrap_self_preprocess(arg, **kwarg):
+def unwrap_self_text_preprocess(arg, **kwarg):
     # メソッドfをクラスメソッドとして呼び出す関数
     return Preprocessor._one_page_text_preprocessor(*arg, **kwarg)
 
@@ -40,16 +43,34 @@ class Preprocessor:
 
         entire_annotations = list()
         doc_title2sents = {}
-        for file in file_paths:
-            with open(file, 'r') as f:
-                for line in tqdm(f): # TODO: multiprocessing
-                    line = line.strip()
-                    line = json.loads(line)
-                    title = line['title']
-                    one_page_text = line['text']
-                    annotations, sents = self._one_page_text_preprocessor(title=title, text=one_page_text)
-                    entire_annotations += annotations
-                    doc_title2sents.update({title: sents})
+
+        if self.args.multiprocessing:
+            title_and_one_page_texts = list()
+            for file in file_paths:
+                with open(file, 'r') as f:
+                    for line in tqdm(f):
+                        line = line.strip()
+                        line = json.loads(line)
+                        title = line['title']
+                        one_page_text = line['text']
+                        title_and_one_page_texts.append([title, one_page_text])
+            print('start multiprocessing...')
+            with Pool(multi.cpu_count()) as pool:
+                imap = pool.starmap(self._one_page_text_preprocessor, title_and_one_page_texts)
+                result = list(tqdm(imap, total=len(title_and_one_page_texts)))
+                pdb.set_trace()
+
+        else:
+            for file in file_paths:
+                with open(file, 'r') as f:
+                    for line in tqdm(f):
+                        line = line.strip()
+                        line = json.loads(line)
+                        title = line['title']
+                        one_page_text = line['text']
+                        annotations, sents = self._one_page_text_preprocessor(title=title, text=one_page_text)
+                        entire_annotations += annotations
+                        doc_title2sents.update({title: sents})
 
         print('all annotations:', len(entire_annotations))
 
@@ -77,6 +98,13 @@ class Preprocessor:
         return list(set(titles))
 
     def _one_page_text_preprocessor(self, text: str, title: str):
+        if self.args.multiprocessing:
+            nlp = spacy.load(self.args.spacy_model)
+            if 'en_' in params.spacy_model:
+                nlp.add_pipe('set_custom_boundaries', before="parser")
+                nlp.tokenizer.add_special_case('lit.', [{ORTH: 'lit.'}])
+                nlp.tokenizer.add_special_case('Lit.', [{ORTH: 'Lit.'}])
+            self.nlp = nlp
         text = self._double_newline_replacer(text)
         sections_and_sentences = self._single_newline_to_sentences(text)
 
@@ -92,7 +120,10 @@ class Preprocessor:
         for sentence in sections_and_sentences:
             a_tag_remain_text, entities = self._from_anchor_tags_to_entities(text=sentence)
             a_tag_no_remaining_text, positions = self._convert_a_tag_to_start_and_end_position(text_which_may_contain_a_tag=a_tag_remain_text)
-            annotation_json, sents = self._sentence_splitter_with_hyperlink_annotations(title, a_tag_no_remaining_text, positions, entities)
+            if self.args.multiprocessing:
+                annotation_json, sents = self._sentence_splitter_with_hyperlink_annotations(title, a_tag_no_remaining_text, positions, entities)
+            else:
+                annotation_json, sents = self._sentence_splitter_with_hyperlink_annotations(title, a_tag_no_remaining_text, positions, entities)
             if self.args.augmentation_with_title_set_string_match:
                 annotation_json = self._from_entire_titles_distant_augmentaton(annotation_json=annotation_json, sents=sents, document_title=title)
 
@@ -211,7 +242,10 @@ class Preprocessor:
 
     def _sentence_splitter_with_hyperlink_annotations(self, title:str, a_tag_no_remaining_text: str, positions: list,
                                                       entities: list):
-        doc = nlp(a_tag_no_remaining_text)
+        if self.args.multiprocessing:
+            doc = self.nlp(a_tag_no_remaining_text)
+        else:
+            doc = nlp(a_tag_no_remaining_text)
         sents = [sentence.text for sentence in doc.sents]
 
         annotation_id2its_annotations = {}

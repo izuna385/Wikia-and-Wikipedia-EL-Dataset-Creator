@@ -6,6 +6,7 @@ class WikiaPreprocessParams:
     def __init__(self):
         parser = argparse.ArgumentParser(description='Entity linker')
         parser.add_argument('-debug', action='store', default=False, type=strtobool)
+        parser.add_argument('-multiprocessing', action='store', default=False, type=strtobool)
         parser.add_argument('-spacy_model', action='store', default='en_core_web_md', type=str)
         parser.add_argument('-original_dataset_dir', action='store', default='./dataset/', type=str)
         parser.add_argument('-world', action='store', default='virtualyoutuber', type=str)
