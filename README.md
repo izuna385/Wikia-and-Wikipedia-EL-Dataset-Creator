@@ -28,6 +28,10 @@ $ python3 create_dataset.py -world [worldname] # python3 create_dataset.py -worl
   * For example, [the page of *Anakin Skywalker*](https://starwars.fandom.com/wiki/Anakin_Skywalker) mentions him without anchor link, as *Anakin* or *Skywalker*.
   
   * With this parameter on, we treat these mentions as annotated ones.
+  
+* `-spacy_model` (Default: `en_core_web_md`)
+  
+  * Specify spaCy model for sentence boundary detection.
 
 ## License
 * Dataset was constructed using Wikias from FANDOM and is licensed under the Creative Commons Attribution-Share Alike License (CC-BY-SA).
