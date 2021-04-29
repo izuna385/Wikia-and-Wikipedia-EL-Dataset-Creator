@@ -18,18 +18,12 @@ from nltk.corpus import brown
 frequency_word_list = FreqDist(i.lower() for i in brown.words())
 COMMON_WORDS = [w_and_freq[0] for w_and_freq in frequency_word_list.most_common()[:10000]]
 
-nlp = spacy.load("en_core_web_md")
-
 @Language.component('set_custom_boundaries')
 def set_custom_boundaries(doc):
     for token in doc[:-1]:
         if token.text in ('lit.', 'Lit.', 'lit', 'Lit'):
             doc[token.i].is_sent_start = False
     return doc
-
-nlp.add_pipe('set_custom_boundaries', before="parser")
-nlp.tokenizer.add_special_case('lit.', [{ORTH: 'lit.'}])
-nlp.tokenizer.add_special_case('Lit.', [{ORTH: 'Lit.'}])
 
 def unwrap_self_preprocess(arg, **kwarg):
     # メソッドfをクラスメソッドとして呼び出す関数
@@ -374,12 +368,17 @@ class Preprocessor:
 
         return new_sentences
 
-
-
-
 if __name__ == '__main__':
     P = WikiaPreprocessParams()
     params = P.opts
+
+    nlp = spacy.load(params.spacy_model)
+
+    # For English wikia and wikipedia.
+    if 'en_' in params.spacy_model:
+        nlp.add_pipe('set_custom_boundaries', before="parser")
+        nlp.tokenizer.add_special_case('lit.', [{ORTH: 'lit.'}])
+        nlp.tokenizer.add_special_case('Lit.', [{ORTH: 'Lit.'}])
 
     preprocessor = Preprocessor(args=params)
     preprocessor.entire_annotation_retriever()
