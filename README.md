@@ -16,6 +16,18 @@ $ conda activate allennlp
 $ pip install -r requirements.txt
 $ python3 create_dataset.py -world [worldname] # python3 create_dataset.py -world virtualyoutuber
 ```
+### Parameters for Creating Dataset
+* `-augmentation_with_title_set_string_match` (Default:`True`)
+
+  * When this parameter is `True`, first we construct title set from entire pages in one wikia `.xml`. Then, when string matches in this title set, we treat these mentions as annotated ones.
+  
+* `-in_document_augmentation_with_its_title` (Default:`True`)
+
+  * When this parameter is `True`, we add another annotation to dataset with distant supervision from title, where the mention appears.
+  
+  * For example, [the page of *Anakin Skywalker*](https://starwars.fandom.com/wiki/Anakin_Skywalker) mentions him without anchor link, as *Anakin* or *Skywalker*.
+  
+  * With this parameter on, we treat these mentions as annotated ones.
 
 ## License
 * Dataset was constructed using Wikias from FANDOM and is licensed under the Creative Commons Attribution-Share Alike License (CC-BY-SA).

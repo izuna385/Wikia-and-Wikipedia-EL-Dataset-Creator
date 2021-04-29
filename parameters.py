@@ -9,7 +9,8 @@ class WikiaPreprocessParams:
         parser.add_argument('-original_dataset_dir', action='store', default='./dataset/', type=str)
         parser.add_argument('-world', action='store', default='virtualyoutuber', type=str)
         parser.add_argument('-dirpath_after_wikiextractor_preprocessing', action='store', default='./text/', type=str)
-        parser.add_argument('-coref_augmentation', action='store', default=False, type=strtobool)
+        parser.add_argument('-augmentation_with_title_set_string_match', action='store', default=True, type=strtobool)
+        parser.add_argument('-in_document_augmentation_with_its_title', action='store', default=True, type=strtobool)
         parser.add_argument('-annotated_dataset_dir', action='store', default='./preprocessed/', type=str)
         parser.add_argument('-stopwords_for_augmentation', action='store', default='virtual,Virtual,youtuber,Youtuber', type=str)
 
