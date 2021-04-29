@@ -14,6 +14,7 @@
 $ conda create -n allennlp python=3.7
 $ conda activate allennlp
 $ pip install -r requirements.txt
+$ (install wikiextractor==3.0.5 from soure https://github.com/attardi/wikiextractor)
 $ python3 create_dataset.py -world [worldname] # python3 create_dataset.py -world virtualyoutuber
 ```
 ### Parameters for Creating Dataset
