@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import re
 from parameters import WikiaPreprocessParams
 from glob import glob
@@ -10,15 +11,23 @@ import copy
 from tqdm import tqdm
 import nltk
 from sentencizer import nlp_returner
+import html
+import six
+import pdb
+from xml.etree.cElementTree import iterparse
+from konoha import SentenceTokenizer
 nltk.download('brown')
 from nltk import FreqDist
 from nltk.corpus import brown
 frequency_word_list = FreqDist(i.lower() for i in brown.words())
 COMMON_WORDS = [w_and_freq[0] for w_and_freq in frequency_word_list.most_common()[:10000]]
-import html
-import pdb
-from konoha import SentenceTokenizer
 
+'''
+For ja
+python3 create_dataset.py -debug False -language ja -dirpath_after_wikiextractor_preprocessing ./text_ja/ \
+                          -world jawiki-20210420 -augmentation_with_title_set_string_match False  \
+                          -in_document_augmentation_with_its_title False
+'''
 class Preprocessor:
     def __init__(self, args):
         self.args = args
@@ -41,7 +50,7 @@ class Preprocessor:
                 for idx, line in tqdm(enumerate(f)): # TODO: multiprocessing
                     line = line.strip()
                     line = json.loads(line)
-                    title = html.unescape(line['title'])
+                    title = _normalize_title(html.unescape(line['title']))
                     one_page_text = html.unescape(line['text'])
                     annotations, sents = self._one_page_text_preprocessor(title=title, text=one_page_text)
                     sents = self._section_anchor_remover(sents)
@@ -416,6 +425,38 @@ class Preprocessor:
             new_sentences.append(sentence)
 
         return new_sentences
+
+# obtained from https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/corpora/wikicorpus.py
+def _extract_pages(in_file):
+    elems = (elem for (_, elem) in iterparse(in_file, events=(b'end',)))
+    elem = next(elems)
+
+    tag = six.text_type(elem.tag)
+    namespace = _get_namespace(tag)
+    page_tag = '{%s}page' % namespace
+    text_path = './{%s}revision/{%s}text' % (namespace, namespace)
+    title_path = './{%s}title' % namespace
+    redirect_path = './{%s}redirect' % namespace
+
+    for elem in elems:
+        if elem.tag == page_tag:
+            title = elem.find(title_path).text
+            text = elem.find(text_path).text or ''
+            redirect = elem.find(redirect_path)
+            if redirect is not None:
+                redirect = _normalize_title(_to_unicode(redirect.attrib['title']))
+
+            yield _to_unicode(title), _to_unicode(text), redirect
+
+            elem.clear()
+
+def _to_unicode(s):
+    if isinstance(s, unicode):
+        return s
+    return s.decode('utf-8')
+
+def _normalize_title(title):
+    return (title[0].upper() + title[1:]).replace('_', ' ')
 
 if __name__ == '__main__':
     P = WikiaPreprocessParams()
