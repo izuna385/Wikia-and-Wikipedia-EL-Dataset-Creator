@@ -7,32 +7,22 @@ import json
 from bs4 import BeautifulSoup
 from urllib.parse import quote, unquote
 import copy
-import spacy
-from spacy.language import Language
-from spacy.symbols import ORTH
 from tqdm import tqdm
 import nltk
+from sentencizer import nlp_returner
 nltk.download('brown')
 from nltk import FreqDist
 from nltk.corpus import brown
 frequency_word_list = FreqDist(i.lower() for i in brown.words())
 COMMON_WORDS = [w_and_freq[0] for w_and_freq in frequency_word_list.most_common()[:10000]]
-
-@Language.component('set_custom_boundaries')
-def set_custom_boundaries(doc):
-    for token in doc[:-1]:
-        if token.text in ('lit.', 'Lit.', 'lit', 'Lit'):
-            doc[token.i].is_sent_start = False
-    return doc
-
-def unwrap_self_preprocess(arg, **kwarg):
-    # メソッドfをクラスメソッドとして呼び出す関数
-    return Preprocessor._one_page_text_preprocessor(*arg, **kwarg)
+import html
+import pdb
 
 class Preprocessor:
     def __init__(self, args):
         self.args = args
         self.all_titles = self._all_titles_collector()
+        self.nlp = nlp_returner(args=self.args)
 
     def entire_annotation_retriever(self):
         dirpath_after_wikiextractor_preprocessing = self.args.dirpath_after_wikiextractor_preprocessing
@@ -42,14 +32,17 @@ class Preprocessor:
         doc_title2sents = {}
         for file in file_paths:
             with open(file, 'r') as f:
-                for line in tqdm(f): # TODO: multiprocessing
+                for idx, line in tqdm(enumerate(f)): # TODO: multiprocessing
                     line = line.strip()
                     line = json.loads(line)
-                    title = line['title']
-                    one_page_text = line['text']
+                    title = html.unescape(line['title'])
+                    one_page_text = html.unescape(line['text'])
                     annotations, sents = self._one_page_text_preprocessor(title=title, text=one_page_text)
+                    sents = self._section_anchor_remover(sents)
                     entire_annotations += annotations
                     doc_title2sents.update({title: sents})
+                    if idx == 200 and self.args.debug:
+                        break
 
         print('all annotations:', len(entire_annotations))
 
@@ -77,12 +70,9 @@ class Preprocessor:
         return list(set(titles))
 
     def _one_page_text_preprocessor(self, text: str, title: str):
-        text = self._double_newline_replacer(text)
         sections_and_sentences = self._single_newline_to_sentences(text)
 
-        # remove title
-        sections_and_sentences = sections_and_sentences[1:]
-        sections_and_sentences = self._no_sentence_remover(sections_and_sentences)
+        # sections_and_sentences = self._no_sentence_remover(sections_and_sentences)
         sections_and_sentences = self._section_anchor_remover(sections_and_sentences)
         sections_and_sentences = [self._external_link_remover_from_one_sentence(sentence=sentence)
                                   for sentence in sections_and_sentences]
@@ -211,8 +201,11 @@ class Preprocessor:
 
     def _sentence_splitter_with_hyperlink_annotations(self, title:str, a_tag_no_remaining_text: str, positions: list,
                                                       entities: list):
-        doc = nlp(a_tag_no_remaining_text)
-        sents = [sentence.text for sentence in doc.sents]
+        if self.args.language == 'en':
+            doc = self.nlp(a_tag_no_remaining_text)
+            sents = [sentence.text for sentence in doc.sents]
+        else:
+            raise ValueError("sentencizer for {} is currently not implemented".format(self.args.language))
 
         annotation_id2its_annotations = {}
         sent_initial_length = 0
@@ -353,32 +346,45 @@ class Preprocessor:
     def _no_sentence_remover(self, sentences):
         new_sentences = list()
         for sentence in sentences:
-            if sentence != '':
-                new_sentences.append(sentence)
+            if sentence.strip() == '':
+                continue
+            new_sentences.append(sentence)
 
         return new_sentences
 
     def _section_anchor_remover(self, sentences):
         new_sentences = list()
         for sentence in sentences:
-            if len(sentence) >= 3 and sentence[0] == '<' and sentence[-2:] == '/>':
+            if sentence.replace(' ','').endswith('ns>'):
                 continue
-            else:
-                new_sentences.append(sentence)
+            if sentence.replace(' ','').endswith('model>'):
+                continue
+            if sentence.replace(' ','').endswith('format>'):
+                continue
+            if sentence.replace(' ','').endswith('timestamp>'):
+                continue
+            if sentence.replace(' ','').endswith('contributor>'):
+                continue
+            if sentence.replace(' ','').endswith('username>'):
+                continue
+            if sentence.replace(' ','').endswith('comment>'):
+                continue
+            if sentence.replace(' ','').endswith('revision>'):
+                continue
+            if sentence.replace(' ','').endswith('parentid>'):
+                continue
+            if sentence.endswith(' />') and sentence.startswith('<mainpage-'):
+                continue
+            if len(sentence.strip()) <= 2:
+                continue
+            if sentence.endswith('minor') and sentence.startswith('<minor'):
+                continue
+            new_sentences.append(sentence)
 
         return new_sentences
 
 if __name__ == '__main__':
     P = WikiaPreprocessParams()
     params = P.opts
-
-    nlp = spacy.load(params.spacy_model)
-
-    # For English wikia and wikipedia.
-    if 'en_' in params.spacy_model:
-        nlp.add_pipe('set_custom_boundaries', before="parser")
-        nlp.tokenizer.add_special_case('lit.', [{ORTH: 'lit.'}])
-        nlp.tokenizer.add_special_case('Lit.', [{ORTH: 'Lit.'}])
-
     preprocessor = Preprocessor(args=params)
     preprocessor.entire_annotation_retriever()
