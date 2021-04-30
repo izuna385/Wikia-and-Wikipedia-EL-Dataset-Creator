@@ -17,6 +17,7 @@ frequency_word_list = FreqDist(i.lower() for i in brown.words())
 COMMON_WORDS = [w_and_freq[0] for w_and_freq in frequency_word_list.most_common()[:10000]]
 import html
 import pdb
+from konoha import SentenceTokenizer
 
 class Preprocessor:
     def __init__(self, args):
@@ -28,9 +29,14 @@ class Preprocessor:
         dirpath_after_wikiextractor_preprocessing = self.args.dirpath_after_wikiextractor_preprocessing
         file_paths = glob(dirpath_after_wikiextractor_preprocessing+'**/*')
 
+        if self.args.debug:
+            file_paths = file_paths[:100]
+
         entire_annotations = list()
         doc_title2sents = {}
-        for file in file_paths:
+
+        debug_idx = 0
+        for file in tqdm(file_paths):
             with open(file, 'r') as f:
                 for idx, line in tqdm(enumerate(f)): # TODO: multiprocessing
                     line = line.strip()
@@ -41,8 +47,13 @@ class Preprocessor:
                     sents = self._section_anchor_remover(sents)
                     entire_annotations += annotations
                     doc_title2sents.update({title: sents})
-                    if idx == 200 and self.args.debug:
+                    debug_idx += 1
+
+                    if debug_idx == 500:
                         break
+                else:
+                    continue
+                break # for debug
 
         print('all annotations:', len(entire_annotations))
 
@@ -55,10 +66,12 @@ class Preprocessor:
     def _all_titles_collector(self):
         dirpath_after_wikiextractor_preprocessing = self.args.dirpath_after_wikiextractor_preprocessing
         file_paths = glob(dirpath_after_wikiextractor_preprocessing+'**/*')
-
         titles = list()
 
-        for file in file_paths:
+        if self.args.debug:
+            file_paths = file_paths[:200]
+
+        for file in tqdm(file_paths):
             with open(file, 'r') as f:
                 for line in f:
                     line = line.strip()
@@ -160,6 +173,7 @@ class Preprocessor:
         '''
         regex_pattern_for_all_titles = '|'.join(self.all_titles)
         for sent in sents:
+
             match_result_with_distant_supervision = re.finditer(regex_pattern_for_all_titles, sent)
 
             for result in match_result_with_distant_supervision:
@@ -207,6 +221,9 @@ class Preprocessor:
         if self.args.language == 'en':
             doc = self.nlp(a_tag_no_remaining_text)
             sents = [sentence.text for sentence in doc.sents]
+        elif self.args.language == 'ja':
+            t = SentenceTokenizer()
+            sents = t.tokenize(a_tag_no_remaining_text)
         else:
             raise ValueError("sentencizer for {} is currently not implemented".format(self.args.language))
 
@@ -214,8 +231,12 @@ class Preprocessor:
         sent_initial_length = 0
 
         for sent in sents:
-            sent_length = len(sent) + 1
-
+            if self.args.language == 'en':
+                sent_length = len(sent) + 1
+            elif self.args.language == 'ja':
+                sent_length = copy.copy(len(sent))
+            else:
+                raise ValueError("sentencizer for {} is currently not implemented".format(self.args.language))
             initial_char_idx = copy.copy(sent_initial_length)
             end_char_idx = initial_char_idx + sent_length
 
@@ -235,10 +256,16 @@ class Preprocessor:
                 if entity == 'Infobox':
                     continue
 
-                if sent[start] == ' ':
-                    sent_annotated = sent[:start] + '<a>' + sent[start: end] + ' </a>' + sent[end:]
-                else:
-                    sent_annotated = sent[:start] + '<a> ' + sent[start: end] + ' </a>' + sent[end:]
+                try:
+                    if self.args.language == 'ja':
+                        sent_annotated = sent[:start] + '<a>' + sent[start: end] + '</a>' + sent[end:]
+                    elif sent[start] == ' ':
+                        sent_annotated = sent[:start] + '<a>' + sent[start: end] + ' </a>' + sent[end:]
+                    else:
+                        sent_annotated = sent[:start] + '<a> ' + sent[start: end] + ' </a>' + sent[end:]
+                except:
+                    print('annotation error')
+                    continue
 
                 annotation_id2its_annotations.update({len(annotation_id2its_annotations): {
                     'document_title': title,
@@ -269,6 +296,7 @@ class Preprocessor:
             original_start, original_end = result.span()
             a_tag_removed_start = copy.copy(original_start)
             a_tag_removed_end = copy.copy(original_end) - 7
+
             mention = result.group(1)
 
             original_text_before_mention = a_tag_remaining_text[:original_start]
@@ -278,7 +306,6 @@ class Preprocessor:
             assert mention == one_mention_a_tag_removed_text[a_tag_removed_start: a_tag_removed_end]
 
             mention_positions.append((a_tag_removed_start, a_tag_removed_end))
-
             a_tag_remaining_text = copy.copy(one_mention_a_tag_removed_text)
 
         return a_tag_remaining_text, mention_positions
@@ -335,8 +362,11 @@ class Preprocessor:
         soup = BeautifulSoup(sentence, "html.parser")
 
         for link in soup.find_all("a"):
-            if "http" in link.get("href"):
-                link.unwrap()
+            try:
+                if "http" in link.get("href"):
+                    link.unwrap()
+            except:
+                continue
 
         return str(soup)
 
