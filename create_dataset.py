@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import sys
+import codecs
 import re
 from parameters import WikiaPreprocessParams
 from glob import glob
@@ -19,8 +21,15 @@ from konoha import SentenceTokenizer
 nltk.download('brown')
 from nltk import FreqDist
 from nltk.corpus import brown
+import logging
+from marisa_trie import Trie, RecordTrie
+
 frequency_word_list = FreqDist(i.lower() for i in brown.words())
 COMMON_WORDS = [w_and_freq[0] for w_and_freq in frequency_word_list.most_common()[:10000]]
+logger = logging.getLogger(__name__)
+DEFAULT_IGNORED_NS = ('wikipedia:', 'file:', 'portal:', 'template:', 'mediawiki:', 'user:',
+                      'help:', 'book:', 'draft:', 'module:', 'timedtext:')
+NAMESPACE_RE = re.compile(r"^{(.*?)}")
 
 '''
 For ja
@@ -32,7 +41,15 @@ class Preprocessor:
     def __init__(self, args):
         self.args = args
         self.all_titles = self._all_titles_collector()
+        self.redirects = _extract_pages(self.args.path_for_raw_xml)
         self.nlp = nlp_returner(args=self.args)
+
+        self.entity_dict = Trie(self.all_titles)
+
+        self.redirect_dict = RecordTrie('<I', [
+            (title, (self.entity_dict[dest_title],))
+            for (title, dest_title) in self.redirects if dest_title in self.entity_dict
+        ])
 
     def entire_annotation_retriever(self):
         dirpath_after_wikiextractor_preprocessing = self.args.dirpath_after_wikiextractor_preprocessing
@@ -337,7 +354,7 @@ class Preprocessor:
         entities = list()
         for link in soup.find_all("a"):
             entity = unquote(link.get("href"))
-            entities.append(entity)
+            entities.append(self.get_entity(entity)) # Redirects are resolved.
             del link['href']
 
         return str(soup), entities
@@ -420,11 +437,41 @@ class Preprocessor:
                 continue
             if len(sentence.strip()) <= 2:
                 continue
-            if sentence.endswith('minor') and sentence.startswith('<minor'):
+            if sentence.replace(' ','').endswith('minor') and sentence.replace(' ','').startswith('<minor'):
                 continue
             new_sentences.append(sentence)
 
         return new_sentences
+
+    def get_entity_index(self, title, resolve_redirect=True):
+        '''
+        Derived from https://github.com/wikipedia2vec/wikipedia2vec/blob/master/wikipedia2vec/dictionary.pyx
+        '''
+        if resolve_redirect:
+            try:
+                index = self.redirect_dict[title][0][0]
+                return index
+            except KeyError:
+                pass
+        try:
+            index = self.entity_dict[title]
+            return index
+
+        except KeyError:
+            return -1
+
+    def get_entity(self, title, resolve_redirect=True, default=None):
+        '''
+        Derived from https://github.com/wikipedia2vec/wikipedia2vec/blob/master/wikipedia2vec/dictionary.pyx
+        '''
+        index = self.get_entity_index(title, resolve_redirect=resolve_redirect)
+        if index == -1:
+            return default
+        else:
+            dict_index = index
+            title = self.entity_dict.restore_key(dict_index)
+            return title
+
 
 # obtained from https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/corpora/wikicorpus.py
 def _extract_pages(in_file):
@@ -438,7 +485,9 @@ def _extract_pages(in_file):
     title_path = './{%s}title' % namespace
     redirect_path = './{%s}redirect' % namespace
 
-    for elem in elems:
+    redirects = list()
+
+    for elem in tqdm(elems):
         if elem.tag == page_tag:
             title = elem.find(title_path).text
             text = elem.find(text_path).text or ''
@@ -446,17 +495,32 @@ def _extract_pages(in_file):
             if redirect is not None:
                 redirect = _normalize_title(_to_unicode(redirect.attrib['title']))
 
-            yield _to_unicode(title), _to_unicode(text), redirect
+            # yield _to_unicode(title), _to_unicode(text), redirect
+            if redirect != None:
+                redirects.append([title, redirect])
 
             elem.clear()
 
+    return redirects
+
 def _to_unicode(s):
-    if isinstance(s, unicode):
+    if isinstance(s, str):
         return s
     return s.decode('utf-8')
 
 def _normalize_title(title):
     return (title[0].upper() + title[1:]).replace('_', ' ')
+
+def _get_namespace(tag):
+    match_obj = NAMESPACE_RE.match(tag)
+    if match_obj:
+        namespace = match_obj.group(1)
+        if not namespace.startswith('http://www.mediawiki.org/xml/export-'):
+            raise ValueError('%s not recognized as MediaWiki dump namespace' % namespace)
+        return namespace
+    else:
+        return ''
+
 
 if __name__ == '__main__':
     P = WikiaPreprocessParams()
