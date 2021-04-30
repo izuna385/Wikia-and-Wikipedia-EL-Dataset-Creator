@@ -50,7 +50,7 @@ class Preprocessor:
                         doc_title2sents.update({title: sents})
                     debug_idx += 1
 
-                    if debug_idx == 500:
+                    if self.args.debug and debug_idx == 500:
                         break
                 else:
                     continue
