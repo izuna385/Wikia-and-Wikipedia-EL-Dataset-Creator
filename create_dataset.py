@@ -6,6 +6,7 @@ import codecs
 import re
 from parameters import WikiaPreprocessParams
 from glob import glob
+import os
 import json
 from bs4 import BeautifulSoup
 from urllib.parse import quote, unquote
@@ -68,14 +69,8 @@ class Preprocessor:
         if self.args.language == 'ja' and self.args.multiprocessing:
             n_cores = multi.cpu_count()
             with Pool(n_cores) as pool:
-                imap = pool.imap_unordered(self._line_process, file_paths)
+                imap = pool.imap(self._one_wikifile_process, file_paths)
                 result = list(tqdm(imap, total=len(file_paths)))
-
-            for res in result:
-                entire_annotations += res['annotations']
-                for title, sents in res['doc_title2sents'].items():
-                    doc_title2sents.update({title: sents})
-
         else:
             for file in tqdm(file_paths):
                 with open(file, 'r') as f:
@@ -97,15 +92,15 @@ class Preprocessor:
                         continue
                     break # for debug
 
-        print('all annotations:', len(entire_annotations))
+            print('all annotations:', len(entire_annotations))
 
-        with open(self.args.annotated_dataset_dir + self.args.world +'_annotation.json', 'w') as f:
-            json.dump(entire_annotations, f, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
+            with open(self.args.annotated_dataset_dir + self.args.world +'_annotation.json', 'w') as f:
+                json.dump(entire_annotations, f, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
 
-        with open(self.args.annotated_dataset_dir + self.args.world +'_title2doc.json', 'w') as g:
-            json.dump(doc_title2sents, g, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
+            with open(self.args.annotated_dataset_dir + self.args.world +'_title2doc.json', 'w') as g:
+                json.dump(doc_title2sents, g, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
 
-    def _line_process(self, file_path):
+    def _one_wikifile_process(self, file_path):
         partial_annotations = list()
         partial_doc_title2sents = {}
 
@@ -120,8 +115,23 @@ class Preprocessor:
                 partial_annotations += annotations
                 if sents != list():
                     partial_doc_title2sents.update({title: sents})
+        d_json = {'annotations': partial_annotations, 'doc_title2sents': partial_doc_title2sents}
+        new_path = file_path.replace(self.args.dirpath_after_wikiextractor_preprocessing,
+                                     self.args.annotated_dataset_dir).split('/')
+        suffix = new_path[3]
+        new_path = '/'.join(new_path[:3])
+        if not os.path.exists(self.args.annotated_dataset_dir):
+            os.mkdir(self.self.args.annotated_dataset_dir)
+        if not os.path.exists(new_path):
+            os.mkdir(new_path)
+        new_path += '/'
+        new_path += suffix
+        new_path += '.json'
 
-        return {'annotations': partial_annotations, 'doc_title2sents': partial_doc_title2sents}
+        with open(new_path, 'w') as dj:
+            json.dump(d_json, dj, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
+
+        return 1
 
     def _all_titles_collector(self):
         dirpath_after_wikiextractor_preprocessing = self.args.dirpath_after_wikiextractor_preprocessing
