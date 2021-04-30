@@ -6,6 +6,7 @@ import codecs
 import re
 from parameters import WikiaPreprocessParams
 from glob import glob
+import os
 import json
 from bs4 import BeautifulSoup
 from urllib.parse import quote, unquote
@@ -23,6 +24,8 @@ from nltk import FreqDist
 from nltk.corpus import brown
 import logging
 from marisa_trie import Trie, RecordTrie
+from multiprocessing import Pool
+import multiprocessing as multi
 
 frequency_word_list = FreqDist(i.lower() for i in brown.words())
 COMMON_WORDS = [w_and_freq[0] for w_and_freq in frequency_word_list.most_common()[:10000]]
@@ -56,39 +59,79 @@ class Preprocessor:
         file_paths = glob(dirpath_after_wikiextractor_preprocessing+'**/*')
 
         if self.args.debug:
-            file_paths = file_paths[:100]
+            file_paths = file_paths[:16]
 
         entire_annotations = list()
         doc_title2sents = {}
 
         debug_idx = 0
-        for file in tqdm(file_paths):
-            with open(file, 'r') as f:
-                for idx, line in tqdm(enumerate(f)): # TODO: multiprocessing
-                    line = line.strip()
-                    line = json.loads(line)
-                    title = _normalize_title(html.unescape(line['title']))
-                    one_page_text = html.unescape(line['text'])
-                    annotations, sents = self._one_page_text_preprocessor(title=title, text=one_page_text)
-                    sents = self._section_anchor_remover(sents)
-                    entire_annotations += annotations
-                    if sents != list(): # TODO: Treat redirects.
-                        doc_title2sents.update({title: sents})
-                    debug_idx += 1
 
-                    if self.args.debug and debug_idx == 500:
-                        break
-                else:
-                    continue
-                break # for debug
+        if self.args.language == 'ja' and self.args.multiprocessing:
+            n_cores = multi.cpu_count()
+            with Pool(n_cores) as pool:
+                imap = pool.imap(self._one_wikifile_process, file_paths)
+                result = list(tqdm(imap, total=len(file_paths)))
+        else:
+            for file in tqdm(file_paths):
+                with open(file, 'r') as f:
+                    for idx, line in tqdm(enumerate(f)): # TODO: multiprocessing
+                        line = line.strip()
+                        line = json.loads(line)
+                        title = _normalize_title(html.unescape(line['title']))
+                        one_page_text = html.unescape(line['text'])
+                        annotations, sents = self._one_page_text_preprocessor(title=title, text=one_page_text)
+                        sents = self._section_anchor_remover(sents)
+                        entire_annotations += annotations
+                        if sents != list():
+                            doc_title2sents.update({title: sents})
+                        debug_idx += 1
 
-        print('all annotations:', len(entire_annotations))
+                        if self.args.debug and debug_idx == 500:
+                            break
+                    else:
+                        continue
+                    break # for debug
 
-        with open(self.args.annotated_dataset_dir + self.args.world +'_annotation.json', 'w') as f:
-            json.dump(entire_annotations, f, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
+            print('all annotations:', len(entire_annotations))
 
-        with open(self.args.annotated_dataset_dir + self.args.world +'_title2doc.json', 'w') as g:
-            json.dump(doc_title2sents, g, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
+            with open(self.args.annotated_dataset_dir + self.args.world +'_annotation.json', 'w') as f:
+                json.dump(entire_annotations, f, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
+
+            with open(self.args.annotated_dataset_dir + self.args.world +'_title2doc.json', 'w') as g:
+                json.dump(doc_title2sents, g, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
+
+    def _one_wikifile_process(self, file_path):
+        partial_annotations = list()
+        partial_doc_title2sents = {}
+
+        with open(file_path, 'r') as f:
+            for idx, line in tqdm(enumerate(f)):  # TODO: multiprocessing
+                line = line.strip()
+                line = json.loads(line)
+                title = _normalize_title(html.unescape(line['title']))
+                one_page_text = html.unescape(line['text'])
+                annotations, sents = self._one_page_text_preprocessor(title=title, text=one_page_text)
+                sents = self._section_anchor_remover(sents)
+                partial_annotations += annotations
+                if sents != list():
+                    partial_doc_title2sents.update({title: sents})
+        d_json = {'annotations': partial_annotations, 'doc_title2sents': partial_doc_title2sents}
+        new_path = file_path.replace(self.args.dirpath_after_wikiextractor_preprocessing,
+                                     self.args.annotated_dataset_dir).split('/')
+        suffix = new_path[3]
+        new_path = '/'.join(new_path[:3])
+        if not os.path.exists(self.args.annotated_dataset_dir):
+            os.mkdir(self.self.args.annotated_dataset_dir)
+        if not os.path.exists(new_path):
+            os.mkdir(new_path)
+        new_path += '/'
+        new_path += suffix
+        new_path += '.json'
+
+        with open(new_path, 'w') as dj:
+            json.dump(d_json, dj, ensure_ascii=False, indent=4, sort_keys=False, separators=(',', ': '))
+
+        return 1
 
     def _all_titles_collector(self):
         dirpath_after_wikiextractor_preprocessing = self.args.dirpath_after_wikiextractor_preprocessing
@@ -353,9 +396,13 @@ class Preprocessor:
 
         entities = list()
         for link in soup.find_all("a"):
-            entity = unquote(link.get("href"))
-            entities.append(self.get_entity(entity)) # Redirects are resolved.
-            del link['href']
+            try:
+                entity = unquote(link.get("href"))
+                entities.append(self.get_entity(entity)) # Redirects are resolved.
+                del link['href']
+            except Exception as e:
+                print("exception args:", e.args)
+                continue
 
         return str(soup), entities
 
