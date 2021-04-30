@@ -396,9 +396,13 @@ class Preprocessor:
 
         entities = list()
         for link in soup.find_all("a"):
-            entity = unquote(link.get("href"))
-            entities.append(self.get_entity(entity)) # Redirects are resolved.
-            del link['href']
+            try:
+                entity = unquote(link.get("href"))
+                entities.append(self.get_entity(entity)) # Redirects are resolved.
+                del link['href']
+            except Exception as e:
+                print("exception args:", e.args)
+                continue
 
         return str(soup), entities
 
