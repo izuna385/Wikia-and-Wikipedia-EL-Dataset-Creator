@@ -8,6 +8,7 @@ class WikiaPreprocessParams:
         parser.add_argument('-debug', action='store', default=False, type=strtobool)
         parser.add_argument('-spacy_model', action='store', default='en_core_web_md', type=str)
         parser.add_argument('-language', action='store', default='en', type=str)
+        parser.add_argument('-multiprocessing', action='store', default=False, type=strtobool)
         parser.add_argument('-world', action='store', default='virtualyoutuber', type=str)
         parser.add_argument('-path_for_raw_xml', action='store', default='./dataset/virtualyoutuber_pages_current.xml', type=str)
         parser.add_argument('-dirpath_after_wikiextractor_preprocessing', action='store', default='./text/', type=str)
