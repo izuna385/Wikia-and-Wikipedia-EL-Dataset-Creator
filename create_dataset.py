@@ -167,6 +167,9 @@ class Preprocessor:
                 mention = sent[span[0]:span[1]]
                 start, end = span[0], span[1]
 
+                if end != len(sent) and sent[end] not in [" ", "'"]:
+                    continue
+
                 same_annotation_flag = 0
                 for idx, original_annotation_from_doc in annotation_json.items():
                     mention_from_annotation = original_annotation_from_doc['mention']
