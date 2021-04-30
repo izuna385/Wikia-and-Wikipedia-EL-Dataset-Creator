@@ -1,5 +1,5 @@
-# Wikia-NER-and-EL-Dataset-Creator
-* You can create datasets from Wikia that can be used for entity recognition and Entity Linking.
+# Wikia/Wikipedia-NER-and-EL-Dataset-Creator
+* You can create datasets from Wikia/Wikipedia that can be used for entity recognition and Entity Linking.
 
 ## Dataset
 * Download [worldname]_pages_current.xml from wikia statistics page to './dataset/.
