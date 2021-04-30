@@ -6,11 +6,6 @@
 
   * For example, if you are interested in Virtual Youtuber, download `virtualyoutuber_pages_current.xml` dump from [here](https://virtualyoutuber.fandom.com/wiki/Special:Statistics).
   
-## Preprocess
-* `python -m wikiextractor.WikiExtractor ./dataset/virtualyoutuber_pages_current.xml --links --json`
-
-## Run
-
 ## Environment Setup
 ```
 $ conda create -n allennlp python=3.7
@@ -20,7 +15,7 @@ $ (install wikiextractor==3.0.5 from source https://github.com/attardi/wikiextra
 ```
 ## Sample Script
 ```
-$ ./scripts/vtuber.sh
+$ sh ./scripts/vtuber.sh
 ```
 
 ### Parameters for Creating Dataset
