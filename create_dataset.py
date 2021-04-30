@@ -46,10 +46,11 @@ class Preprocessor:
                     annotations, sents = self._one_page_text_preprocessor(title=title, text=one_page_text)
                     sents = self._section_anchor_remover(sents)
                     entire_annotations += annotations
-                    doc_title2sents.update({title: sents})
+                    if sents != list(): # TODO: Treat redirects.
+                        doc_title2sents.update({title: sents})
                     debug_idx += 1
 
-                    if debug_idx == 500:
+                    if self.args.debug and debug_idx == 500:
                         break
                 else:
                     continue
