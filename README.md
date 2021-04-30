@@ -1,18 +1,20 @@
 # Wikia/Wikipedia-NER-and-EL-Dataset-Creator
 * You can create datasets from Wikia/Wikipedia that can be used for entity recognition and Entity Linking.
 
-## Dataset
-* Download [worldname]_pages_current.xml from wikia statistics page to './dataset/.
+* Sample dataset is available [here](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing). See also [preprocessed data examples](#preprocessed-data-example).
 
-  * For example, if you are interested in Virtual Youtuber, download `virtualyoutuber_pages_current.xml` dump from [here](https://virtualyoutuber.fandom.com/wiki/Special:Statistics).
-  
-## Environment Setup
+## Environment Setup for Preprocessing.
 ```
 $ conda create -n allennlp python=3.7
 $ conda activate allennlp
 $ pip install -r requirements.txt
 $ (install wikiextractor==3.0.5 from source https://github.com/attardi/wikiextractor for activate --json option.)
 ```
+## Dataset
+* Download [worldname]_pages_current.xml from wikia statistics page to './dataset/`.
+
+  * For example, if you are interested in Virtual Youtuber, download `virtualyoutuber_pages_current.xml` dump from [here](https://virtualyoutuber.fandom.com/wiki/Special:Statistics).
+  
 ## Sample Script
 ```
 $ sh ./scripts/vtuber.sh
@@ -38,9 +40,10 @@ $ sh ./scripts/vtuber.sh
 ## License
 * Dataset was constructed using Wikias from FANDOM and is licensed under the Creative Commons Attribution-Share Alike License (CC-BY-SA).
 
-## Preprocessed data example.
+## Preprocessed data example
 * [data](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing)
 
+### `[world]_annotation.json`
 | key                             | its_content                                                                          | 
 | ------------------------------- | ------------------------------------------------------------------------------------ | 
 | `document_title`                  | Page title where the annotation exists.                                              | 
@@ -77,6 +80,32 @@ $ sh ./scripts/vtuber.sh
 ]
 ...
 
+```
+### `[world]_title2doc.json`
+* Redirect-resolved title and its descriptions after sentence split are available.
+```
+{
+    "Furen E Lustario": [
+        "Furen E Lustario (フレン・E・ルスタリオ) is a female Japanese Virtual YouTuber and member of Nijisanji.",
+        "A female knight of the Corvus Empire.",
+        "Introduction Video.",
+        "Furen's introduction.",
+        "Personality.",
+        "Furen lacks a surprising amount of common sense.",
+        "It has been displayed in at least two streams that she cannot tell from left to right.",
+        ...
+    ],
+    "Ibrahim": [
+        "Ibrahim (イブラヒム) is a male Japanese Virtual YouTuber and a member of Nijisanji.",
+        "A former oil tycoon from the Corvus Empire.",
+        "Since the value of oil has fallen, he now makes a living from a hot spring that he accidentally dug up.",
+        "History.",
+        "Background.",
+        "Ibrahim made his YouTube debut on 1 February 2020.",
+        ...
+    ],
+    ...
+}
 ```
 
 ## WIP
