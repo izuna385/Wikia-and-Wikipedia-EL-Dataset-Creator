@@ -10,13 +10,19 @@
 * `python -m wikiextractor.WikiExtractor ./dataset/virtualyoutuber_pages_current.xml --links --json`
 
 ## Run
+
+## Environment Setup
 ```
 $ conda create -n allennlp python=3.7
 $ conda activate allennlp
 $ pip install -r requirements.txt
 $ (install wikiextractor==3.0.5 from source https://github.com/attardi/wikiextractor for activate --json option.)
-$ python3 create_dataset.py -world [worldname] # python3 create_dataset.py -world virtualyoutuber
 ```
+## Sample Script
+```
+$ ./scripts/vtuber.sh
+```
+
 ### Parameters for Creating Dataset
 * `-augmentation_with_title_set_string_match` (Default:`True`)
 
@@ -44,7 +50,7 @@ $ python3 create_dataset.py -world [worldname] # python3 create_dataset.py -worl
 | ------------------------------- | ------------------------------------------------------------------------------------ | 
 | `document_title`                  | Page title where the annotation exists.                                              | 
 | `anchor_sent`                     | Anchored sentence with `<a>` and `</a>`. This anchor can be used for Entity Linking. | 
-| `annotation_doc_entity_title`     | Which entity to be linked if the mention is disambiguated.                           | 
+| `annotation_doc_entity_title`     | Which entity to be linked if the mention is disambiguated. Redirects are also considered.                           | 
 | `mention`                         | Surface form as it is in sentence where the mention appeared.                        | 
 | `original_sentence`               | Sentence without anchors.                                                            | 
 | `original_sentence_mention_start` | Mention span start position in original sentence.                                    | 
@@ -79,5 +85,4 @@ $ python3 create_dataset.py -world [worldname] # python3 create_dataset.py -worl
 ```
 
 ## WIP
-* SBD with en-wiki and ja-wiki.
-* Redirect Normalization with Trie.
+* Multiprocessing.

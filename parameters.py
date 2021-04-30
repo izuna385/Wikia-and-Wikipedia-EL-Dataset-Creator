@@ -14,7 +14,7 @@ class WikiaPreprocessParams:
         parser.add_argument('-augmentation_with_title_set_string_match', action='store', default=True, type=strtobool)
         parser.add_argument('-in_document_augmentation_with_its_title', action='store', default=True, type=strtobool)
         parser.add_argument('-annotated_dataset_dir', action='store', default='./preprocessed/', type=str)
-        parser.add_argument('-stopwords_for_augmentation', action='store', default='virtual,Virtual,youtuber,Youtuber', type=str)
+        parser.add_argument('-stopwords_for_augmentation', action='store', default='test_stopword', type=str)
 
         self.opts = parser.parse_args(sys.argv[1:])
         print('\n===PARAMETERS===')

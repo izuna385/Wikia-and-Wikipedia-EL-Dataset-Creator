@@ -233,7 +233,7 @@ class Preprocessor:
                                             {
                 'document_title': document_title,
                 'anchor_sent': sent_annotated,
-                'annotation_doc_entity_title': mention,
+                'annotation_doc_entity_title': self.get_entity(mention), # Redirects are resolved.
                 'mention': sent[span[0]:span[1]],
                 'original_sentence': sent,
                 'original_sentence_mention_start': span[0],
