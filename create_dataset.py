@@ -503,6 +503,9 @@ def _extract_pages(in_file):
 
     return redirects
 
+'''
+Derived from https://github.com/wikipedia2vec/wikipedia2vec/blob/master/wikipedia2vec/dictionary.pyx
+'''
 def _to_unicode(s):
     if isinstance(s, str):
         return s
@@ -520,7 +523,6 @@ def _get_namespace(tag):
         return namespace
     else:
         return ''
-
 
 if __name__ == '__main__':
     P = WikiaPreprocessParams()
