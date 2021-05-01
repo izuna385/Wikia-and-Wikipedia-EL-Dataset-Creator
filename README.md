@@ -3,9 +3,13 @@
 
 * Sample Dataset is available [here](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing). See also [preprocessed data examples](#preprocessed-data-example-from-wikia).
 
-# Preprocessed ja-wiki dataset.
+## Preprocessed ja-wiki dataset.
 
 * [Here](https://drive.google.com/file/d/11_SUXM5wba1fSjF7eaTFO8ISk53nEwXk/view?usp=sharing)
+
+## Create en-wiki dataset. 
+
+* `sh ./scripts/en_wiki.sh`
 
 ## Environment Setup for Preprocessing.
 ```
