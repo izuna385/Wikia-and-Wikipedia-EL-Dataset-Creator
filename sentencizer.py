@@ -1,6 +1,7 @@
 import spacy
 from spacy.language import Language
 from spacy.symbols import ORTH
+import pysbd
 
 @Language.component('set_custom_boundaries')
 def set_custom_boundaries(doc):
@@ -16,3 +17,7 @@ def nlp_returner(args):
     nlp.tokenizer.add_special_case('Lit.', [{ORTH: 'Lit.'}])
 
     return nlp
+
+def pysbd_sentencizer(sentence: str):
+    seg = pysbd.Segmenter(language="en", clean=False)
+    return seg.segment(sentence)

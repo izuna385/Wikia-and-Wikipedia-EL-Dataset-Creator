@@ -1,7 +1,7 @@
 # Wikia/Wikipedia-NER-and-EL-Dataset-Creator
 * You can create datasets from Wikia/Wikipedia that can be used for *both of* entity recognition and Entity Linking.
 
-* Sample Dataset is available [here](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing). See also [preprocessed data examples](#preprocessed-data-example).
+* Sample Dataset is available [here](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing). See also [preprocessed data examples](#preprocessed-data-example-from-wikia).
 
 # Preprocessed ja-wiki dataset.
 
@@ -117,9 +117,4 @@ $ sh ./scripts/vtuber.sh
 ```
 
 ## WIP
-
-* Multiprocessing for English document.
-
-  * Currently, parallel processing is only supported in the preprocessing of Japanese wikipedia.
-
 * Add Entity Type to title2doc.json for each entity.

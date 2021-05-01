@@ -1,1 +1,0 @@
-* Annotated files are to be dumped here.

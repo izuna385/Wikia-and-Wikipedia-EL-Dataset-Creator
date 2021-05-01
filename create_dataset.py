@@ -13,7 +13,7 @@ from urllib.parse import quote, unquote
 import copy
 from tqdm import tqdm
 import nltk
-from sentencizer import nlp_returner
+from sentencizer import nlp_returner, pysbd_sentencizer
 import html
 import six
 import pdb
@@ -60,7 +60,7 @@ class Preprocessor:
 
         debug_idx = 0
 
-        if self.args.language == 'ja' and self.args.multiprocessing:
+        if self.args.multiprocessing:
             n_cores = multi.cpu_count()
             with Pool(n_cores) as pool:
                 imap = pool.imap(self._one_wikifile_process, file_paths)
@@ -283,8 +283,10 @@ class Preprocessor:
     def _sentence_splitter_with_hyperlink_annotations(self, title:str, a_tag_no_remaining_text: str, positions: list,
                                                       entities: list):
         if self.args.language == 'en':
-            doc = self.nlp(a_tag_no_remaining_text)
-            sents = [sentence.text for sentence in doc.sents]
+            # Currently spacy can't be applyed to multiprocessing, so pysbd is used here.
+            # doc = self.nlp(a_tag_no_remaining_text)
+            # sents = [sentence.text for sentence in doc.sents]
+            sents = pysbd_sentencizer(a_tag_no_remaining_text)
         elif self.args.language == 'ja':
             t = SentenceTokenizer()
             sents = t.tokenize(a_tag_no_remaining_text)
