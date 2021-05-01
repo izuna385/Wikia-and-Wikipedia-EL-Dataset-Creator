@@ -1,7 +1,11 @@
 # Wikia/Wikipedia-NER-and-EL-Dataset-Creator
-* You can create datasets from Wikia/Wikipedia that can be used for entity recognition and Entity Linking.
+* You can create datasets from Wikia/Wikipedia that can be used for *both of* entity recognition and Entity Linking.
 
-* Sample dataset is available [here](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing). See also [preprocessed data examples](#preprocessed-data-example).
+* Sample Dataset is available [here](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing). See also [preprocessed data examples](#preprocessed-data-example).
+
+# Preprocessed ja-wiki dataset.
+
+* [Here](https://drive.google.com/file/d/11_SUXM5wba1fSjF7eaTFO8ISk53nEwXk/view?usp=sharing)
 
 ## Environment Setup for Preprocessing.
 ```
@@ -10,12 +14,16 @@ $ conda activate allennlp
 $ pip install -r requirements.txt
 $ (install wikiextractor==3.0.5 from source https://github.com/attardi/wikiextractor for activate --json option.)
 ```
-## Dataset
-* Download [worldname]_pages_current.xml from wikia statistics page to './dataset/`.
+## Dataset Preparation 
+### For Wikia
+* Download [worldname]_pages_current.xml from wikia statistics page to `./dataset/`.
 
   * For example, if you are interested in Virtual Youtuber, download `virtualyoutuber_pages_current.xml` dump from [here](https://virtualyoutuber.fandom.com/wiki/Special:Statistics).
-  
-## Sample Script
+
+### For Wikipedia
+* Download Wikipedia-dump from [here(en)](https://dumps.wikimedia.org/enwiki/) or [here(ja)](https://dumps.wikimedia.org/jawiki/) and unzip bzip2 file.
+
+## Sample Script for Creating EL Dataset. 
 ```
 $ sh ./scripts/vtuber.sh
 ```
@@ -40,7 +48,7 @@ $ sh ./scripts/vtuber.sh
 ## License
 * Dataset was constructed using Wikias from FANDOM and is licensed under the Creative Commons Attribution-Share Alike License (CC-BY-SA).
 
-## Preprocessed data example
+## Preprocessed data example from [Wikia](https://www.wikia.org/).
 * [data](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing)
 
 ### `[world]_annotation.json`
@@ -109,4 +117,9 @@ $ sh ./scripts/vtuber.sh
 ```
 
 ## WIP
+
 * Multiprocessing for English document.
+
+  * Currently, parallel processing is only supported in the preprocessing of Japanese wikipedia.
+
+* Add Entity Type to title2doc.json for each entity.
