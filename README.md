@@ -109,4 +109,4 @@ $ sh ./scripts/vtuber.sh
 ```
 
 ## WIP
-* Multiprocessing.
+* Multiprocessing for English document.
