@@ -26,13 +26,11 @@ ipadic==1.0.0
 Jinja2==2.11.3
 jmespath==0.10.0
 joblib==1.0.1
-jsonnet==0.17.0
 jsonpickle==2.0.0
 lmdb==1.1.1
 MarkupSafe==1.1.1
 more-itertools==8.7.0
 murmurhash==1.0.5
-neologdn==0.4
 nltk==3.5
 nmslib==2.1.1
 numpy==1.20.1
