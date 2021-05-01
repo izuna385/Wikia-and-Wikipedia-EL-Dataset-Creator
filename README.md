@@ -63,7 +63,7 @@ $ sh ./scripts/vtuber.sh
   * If `True`, documents after preprocessing with wikiextractor are multiprocessed.
 
 ## License
-* Dataset was constructed using Wikias from FANDOM and is licensed under the Creative Commons Attribution-Share Alike License (CC-BY-SA).
+* Dataset was constructed using Wikias (from FANDOM) and Wikipedia. This dataset is licensed under the Creative Commons Attribution-Share Alike License (CC-BY-SA).
 
 ## Preprocessed data example from [Wikia](https://www.wikia.org/).
 * [data](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing)
@@ -135,3 +135,7 @@ $ sh ./scripts/vtuber.sh
 
 ## WIP
 * Add Entity Type to doc_title2sents.json for each entity.
+
+## Contact
+* `izuna385(_atmark)gmail.com`
+* PR and issues are welocome!
