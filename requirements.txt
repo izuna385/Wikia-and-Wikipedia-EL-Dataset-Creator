@@ -86,4 +86,3 @@ urllib3>=1.26.4
 wasabi==0.8.2
 wcwidth==0.2.5
 zipp==3.4.0
-pysbd
