@@ -68,7 +68,7 @@ $ sh ./scripts/vtuber.sh
 ## Preprocessed data example from [Wikia](https://www.wikia.org/).
 * [data](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing)
 
-### `[world]_annotation.json`
+### `annotation.json`
 | key                             | its_content                                                                          | 
 | ------------------------------- | ------------------------------------------------------------------------------------ | 
 | `document_title`                  | Page title where the annotation exists.                                              | 
@@ -79,10 +79,9 @@ $ sh ./scripts/vtuber.sh
 | `original_sentence_mention_start` | Mention span start position in original sentence.                                    | 
 | `original_sentence_mention_end`   | Mention span end position in original sentence.                                      | 
 
+* For instance, a real-world example of `annotations.json` is shown from [virtualyoutuber wikia](https://virtualyoutuber.fandom.com/).
 
-* For instance, a real-world example is shown from [virtualyoutuber wikia](https://virtualyoutuber.fandom.com/).
-### `annotations.json`
-```python3
+```json
 [
     {
         "document_title": "Melissa Kinrenka",
@@ -109,7 +108,7 @@ $ sh ./scripts/vtuber.sh
 ```
 ### `doc_title2sents.json`
 * Redirect-resolved title and its descriptions after sentence split are available.
-```
+```json
 {
     "Furen E Lustario": [
         "Furen E Lustario (フレン・E・ルスタリオ) is a female Japanese Virtual YouTuber and member of Nijisanji.",
