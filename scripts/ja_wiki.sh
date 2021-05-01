@@ -1,2 +1,2 @@
-python -m wikiextractor.WikiExtractor ./dataset/jawiki-20210420_pages_current.xml --links --json ;
-python3 create_dataset.py -language ja -dirpath_after_wikiextractor_preprocessing ./text/ -world jawiki-20210420 -augmentation_with_title_set_string_match False -in_document_augmentation_with_its_title False -multiprocessing True ;
+python -m wikiextractor.WikiExtractor ./dataset/jawiki-20210420_dump.xml --links --json ;
+python3 create_dataset.py -language ja -dirpath_after_wikiextractor_preprocessing ./text/ -augmentation_with_title_set_string_match False -in_document_augmentation_with_its_title False -multiprocessing True ;
