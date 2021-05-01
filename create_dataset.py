@@ -34,12 +34,6 @@ DEFAULT_IGNORED_NS = ('wikipedia:', 'file:', 'portal:', 'template:', 'mediawiki:
                       'help:', 'book:', 'draft:', 'module:', 'timedtext:')
 NAMESPACE_RE = re.compile(r"^{(.*?)}")
 
-'''
-For ja
-python3 create_dataset.py -debug False -language ja -dirpath_after_wikiextractor_preprocessing ./text_ja/ \
-                          -world jawiki-20210420 -augmentation_with_title_set_string_match False  \
-                          -in_document_augmentation_with_its_title False
-'''
 class Preprocessor:
     def __init__(self, args):
         self.args = args
