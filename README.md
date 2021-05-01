@@ -1,7 +1,7 @@
 # Wikia/Wikipedia-NER-and-EL-Dataset-Creator
 * You can create datasets from Wikia/Wikipedia that can be used for *both of* entity recognition and Entity Linking.
 
-* Sample Dataset is available [here](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing). See also [preprocessed data examples](#preprocessed-data-example).
+* Sample Dataset is available [here](https://drive.google.com/drive/folders/1gvqrj9f4IVi3lscwsa_EdAp0I4CpNTAe?usp=sharing). See also [preprocessed data examples](#preprocessed-data-example-from-wikia).
 
 # Preprocessed ja-wiki dataset.
 
@@ -44,6 +44,23 @@ $ sh ./scripts/vtuber.sh
 * `-spacy_model` (Default: `en_core_web_md`)
   
   * Specify spaCy model for sentence boundary detection.
+  
+  * Note: SBD with spaCy is conducted only when `-multiprocessing` is `False`.
+  
+* `-language` (Default: `en`)
+
+  * Specify language of document.
+  
+  * When `en` is selected and `-multiprocessing` is `False`, [spaCy](https://github.com/explosion/spaCy) is used for SBD.
+  
+  * When `en` is selected and `-multiprocessing` is `True`, [pysbd](https://github.com/nipunsadvilkar/pySBD) is used for SBD.
+  
+  * When `ja` is selected, [konoha](https://github.com/himkt/konoha/) is used for SBD.
+
+
+* `-multiprocessing` (Default: `False`)
+
+  * If `True`, documents after preprocessing with wikiextractor are multiprocessed.
 
 ## License
 * Dataset was constructed using Wikias from FANDOM and is licensed under the Creative Commons Attribution-Share Alike License (CC-BY-SA).
@@ -64,6 +81,7 @@ $ sh ./scripts/vtuber.sh
 
 
 * For instance, a real-world example is shown from [virtualyoutuber wikia](https://virtualyoutuber.fandom.com/).
+### `annotations.json`
 ```python3
 [
     {
@@ -89,7 +107,7 @@ $ sh ./scripts/vtuber.sh
 ...
 
 ```
-### `[world]_title2doc.json`
+### `doc_title2sents.json`
 * Redirect-resolved title and its descriptions after sentence split are available.
 ```
 {
@@ -117,9 +135,4 @@ $ sh ./scripts/vtuber.sh
 ```
 
 ## WIP
-
-* Multiprocessing for English document.
-
-  * Currently, parallel processing is only supported in the preprocessing of Japanese wikipedia.
-
-* Add Entity Type to title2doc.json for each entity.
+* Add Entity Type to doc_title2sents.json for each entity.

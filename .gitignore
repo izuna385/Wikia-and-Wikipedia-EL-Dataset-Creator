@@ -4,3 +4,6 @@
 ./preprocessed/annotation.json
 .idea/*
 __pycache__/*
+./preprocessed_jawiki/*/*
+
+
