@@ -283,10 +283,12 @@ class Preprocessor:
     def _sentence_splitter_with_hyperlink_annotations(self, title:str, a_tag_no_remaining_text: str, positions: list,
                                                       entities: list):
         if self.args.language == 'en':
-            # Currently spacy can't be applyed to multiprocessing, so pysbd is used here.
-            # doc = self.nlp(a_tag_no_remaining_text)
-            # sents = [sentence.text for sentence in doc.sents]
-            sents = pysbd_sentencizer(a_tag_no_remaining_text)
+            doc = self.nlp(a_tag_no_remaining_text)
+            sents = [sentence.text for sentence in doc.sents]
+
+            # Currently spacy can't be applyed to multiprocessing, so we gonna use pysbd when multiprocessing.
+            # But this has some bug. Space is added at the end of each split sentence.
+            # sents = pysbd_sentencizer(a_tag_no_remaining_text)
         elif self.args.language == 'ja':
             t = SentenceTokenizer()
             sents = t.tokenize(a_tag_no_remaining_text)
@@ -332,7 +334,7 @@ class Preprocessor:
                     print('annotation error')
                     continue
 
-                # TOD: add assertionError
+                # TODO: add assertionError
                 annotation_id2its_annotations.update({len(annotation_id2its_annotations): {
                     'document_title': title,
                     'anchor_sent': sent_annotated,

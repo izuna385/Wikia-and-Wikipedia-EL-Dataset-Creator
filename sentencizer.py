@@ -18,6 +18,6 @@ def nlp_returner(args):
 
     return nlp
 
-def pysbd_sentencizer(sentence: str):
+def pysbd_sentencizer(sentence: str, language="en"):
     seg = pysbd.Segmenter(language="en", clean=False)
     return seg.segment(sentence)
