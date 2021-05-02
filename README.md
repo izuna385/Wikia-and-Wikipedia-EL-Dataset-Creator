@@ -9,7 +9,7 @@
 
 ## Create en-wiki dataset. 
 
-* Currently Onging under branch `feature/FixEnParseBug`.
+* `sh ./scripts/en_wiki.sh`
 
 ## Environment Setup for Preprocessing.
 ```
