@@ -2,6 +2,9 @@ import spacy
 from spacy.language import Language
 from spacy.symbols import ORTH
 import pysbd
+import nltk
+nltk.download('punkt')
+from nltk.tokenize import sent_tokenize
 
 @Language.component('set_custom_boundaries')
 def set_custom_boundaries(doc):
@@ -21,3 +24,6 @@ def nlp_returner(args):
 def pysbd_sentencizer(sentence: str, language="en"):
     seg = pysbd.Segmenter(language="en", clean=False)
     return seg.segment(sentence)
+
+def nltk_sentencizer(sentence: str, language="en"):
+    return sent_tokenize(sentence)
