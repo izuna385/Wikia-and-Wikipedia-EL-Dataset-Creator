@@ -313,7 +313,6 @@ class Preprocessor:
                 if initial_char_idx <= start and end <= end_char_idx:
                     to_be_considered_annotations.append((start - sent_initial_length, end - sent_initial_length, entity))
 
-
             for shift_annotation in to_be_considered_annotations:
                 start = shift_annotation[0]
                 end = shift_annotation[1]
@@ -333,6 +332,7 @@ class Preprocessor:
                     print('annotation error')
                     continue
 
+                # TOD: add assertionError
                 annotation_id2its_annotations.update({len(annotation_id2its_annotations): {
                     'document_title': title,
                     'anchor_sent': sent_annotated,
