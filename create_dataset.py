@@ -284,13 +284,14 @@ class Preprocessor:
                                                       entities: list):
         if self.args.language == 'en':
             if self.args.multiprocessing:
-                sents = nltk_sentencizer(a_tag_no_remaining_text)
+                raise Exception('Currently not implemented.')
+                # sents = nltk_sentencizer(a_tag_no_remaining_text)
             else:
                 doc = self.nlp(a_tag_no_remaining_text)
                 sents = [sentence.text for sentence in doc.sents]
 
-            # Currently spacy can't be applyed to multiprocessing, so we gonna use pysbd when multiprocessing.
-            # But this has some bug. Space is added at the end of each split sentence.
+            # Currently spacy can't be applyed to multiprocessing, so we gonna use pysbd or nltk when multiprocessing.
+            # But they have some bug. Space is added at the end of each split sentence.
             # sents = pysbd_sentencizer(a_tag_no_remaining_text)
 
         elif self.args.language == 'ja':
