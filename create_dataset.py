@@ -13,7 +13,7 @@ from urllib.parse import quote, unquote
 import copy
 from tqdm import tqdm
 import nltk
-from sentencizer import nlp_returner, pysbd_sentencizer
+from sentencizer import nlp_returner, pysbd_sentencizer, nltk_sentencizer
 import html
 import six
 import pdb
@@ -63,7 +63,7 @@ class Preprocessor:
         if self.args.multiprocessing:
             n_cores = multi.cpu_count()
             with Pool(n_cores) as pool:
-                imap = pool.imap(self._one_wikifile_process, file_paths)
+                imap = pool.imap_unordered(self._one_wikifile_process, file_paths)
                 result = list(tqdm(imap, total=len(file_paths)))
         else:
             for file in tqdm(file_paths):
@@ -283,12 +283,16 @@ class Preprocessor:
     def _sentence_splitter_with_hyperlink_annotations(self, title:str, a_tag_no_remaining_text: str, positions: list,
                                                       entities: list):
         if self.args.language == 'en':
-            doc = self.nlp(a_tag_no_remaining_text)
-            sents = [sentence.text for sentence in doc.sents]
+            if self.args.multiprocessing:
+                sents = nltk_sentencizer(a_tag_no_remaining_text)
+            else:
+                doc = self.nlp(a_tag_no_remaining_text)
+                sents = [sentence.text for sentence in doc.sents]
 
             # Currently spacy can't be applyed to multiprocessing, so we gonna use pysbd when multiprocessing.
             # But this has some bug. Space is added at the end of each split sentence.
             # sents = pysbd_sentencizer(a_tag_no_remaining_text)
+
         elif self.args.language == 'ja':
             t = SentenceTokenizer()
             sents = t.tokenize(a_tag_no_remaining_text)
