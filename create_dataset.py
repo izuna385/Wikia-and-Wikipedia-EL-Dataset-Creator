@@ -333,8 +333,8 @@ class Preprocessor:
                 except:
                     print('annotation error')
                     continue
-                pdb.set_trace()
-                # TOD: add assertionError
+
+                # TODO: add assertionError
                 annotation_id2its_annotations.update({len(annotation_id2its_annotations): {
                     'document_title': title,
                     'anchor_sent': sent_annotated,
